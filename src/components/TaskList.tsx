@@ -1,30 +1,50 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../app/store';
-import { deleteTask, toggleTaskStatus } from '../features/tasks/taskSlice';
+import { Task, deleteTask, toggleTaskStatus } from '../features/tasks/taskSlice';
+import { AppDispatch } from '../app/store';
 
-const TaskList: React.FC = () => {
+interface TaskListProps {
+  onEdit: (task: Task) => void;
+}
+
+const TaskList: React.FC<TaskListProps> = ({ onEdit }) => {
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleToggleComplete = (id: string) => {
+    dispatch(toggleTaskStatus(id));
+  };
+
+  const handleDelete = (id: string) => {
+    dispatch(deleteTask(id));
+  };
 
   return (
     <div>
+      <h2 className="text-xl font-bold mb-4">Task List</h2>
       {tasks.map((task) => (
-        <div key={task.id} className="flex justify-between p-4 border-b">
-          <div>
-            <h2 className={task.completed ? 'line-through' : ''}>{task.title}</h2>
-            <p>{task.description}</p>
-          </div>
-          <div>
+        <div key={task.id} className="task-item p-2 border-b border-gray-300">
+          <h3 className={`font-semibold ${task.completed ? 'line-through' : ''}`}>
+            {task.title}
+          </h3>
+          <p>{task.description}</p>
+          <div className="mt-2">
             <button
-              onClick={() => dispatch(toggleTaskStatus(task.id))}
-              className="text-green-500"
+              className="text-green-500 hover:underline mr-4"
+              onClick={() => handleToggleComplete(task.id)}
             >
-              {task.completed ? 'Undo' : 'Complete'}
+              {task.completed ? 'Mark Incomplete' : 'Mark Complete'}
             </button>
             <button
-              onClick={() => dispatch(deleteTask(task.id))}
-              className="text-red-500 ml-2"
+              className="text-blue-500 hover:underline mr-4"
+              onClick={() => onEdit(task)}
+            >
+              Edit
+            </button>
+            <button
+              className="text-red-500 hover:underline"
+              onClick={() => handleDelete(task.id)}
             >
               Delete
             </button>
